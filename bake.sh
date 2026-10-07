@@ -36,7 +36,7 @@ log "system deps ok"
 # Vast ComfyUI templates ship torch + cuda already. Never reinstall a working
 # stack — detect first, only build the venv path on a truly bare box.
 PY=""
-for cand in "$COMFY_DIR/.venv/bin/python" "/venv/bin/python" "/opt/venv/bin/python"; do
+for cand in "/venv/main/bin/python" "$COMFY_DIR/.venv/bin/python" "/venv/bin/python" "/opt/venv/bin/python"; do
   [[ -x "$cand" ]] && PY="$cand" && break
 done
 if [[ -z "$PY" ]] && python3 -c "import torch" 2>/dev/null; then PY="$(command -v python3)"; fi
@@ -113,12 +113,21 @@ if ! tailscale status >/dev/null 2>&1; then
 fi
 log "tailscale: $(tailscale ip -4 2>/dev/null | head -n1)"
 
-# ------------------------------------------------------- 7. run script + up
+# --------------------------------------- 7. ComfyUI up (supervisor-aware)
+# Vast base-image derivatives run comfyui as a SUPERVISOR service (internal
+# :18188, flags in $COMFYUI_ARGS) — never nohup a second copy beside it.
+# Bare boxes get the run.sh fallback on :8188.
 # shellcheck disable=SC1091
 set -a; . "$HERE/comfy/flags.env"; set +a
-# run.sh uses the same python bake resolved ($PY), not a hardcoded venv —
-# template boxes often have no .venv at all.
-cat > "$COMFY_DIR/run.sh" <<EOF
+if supervisorctl status comfyui >/dev/null 2>&1; then
+  COMFY_PORT="${COMFY_PORT:-18188}"
+  log "supervisor manages comfyui — leaving the service alone (flags: \$COMFYUI_ARGS)"
+  supervisorctl status comfyui || true
+else
+  COMFY_PORT="${COMFY_PORT:-8188}"
+  # run.sh uses the same python bake resolved ($PY), not a hardcoded venv —
+  # template boxes often have no .venv at all.
+  cat > "$COMFY_DIR/run.sh" <<EOF
 #!/bin/bash
 cd "$COMFY_DIR" || exit 1
 PY_BIN="$PY"
@@ -131,22 +140,28 @@ nohup "\$PY_BIN" main.py $COMFY_ARGS > comfy.log 2>&1 &
 echo \$! > comfy.pid
 echo "comfy pid \$(cat comfy.pid), log $COMFY_DIR/comfy.log"
 EOF
-chmod +x "$COMFY_DIR/run.sh"
-if ! curl -sf -m 3 "http://127.0.0.1:${COMFY_PORT:-8188}/system_stats" >/dev/null; then
-  log "starting ComfyUI…"
-  bash "$COMFY_DIR/run.sh"
+  chmod +x "$COMFY_DIR/run.sh"
+fi
+if ! curl -sf -m 3 "http://127.0.0.1:$COMFY_PORT/system_stats" >/dev/null; then
+  if supervisorctl status comfyui >/dev/null 2>&1; then
+    log "comfyui service down — restarting via supervisor…"
+    supervisorctl restart comfyui
+  else
+    log "starting ComfyUI…"
+    bash "$COMFY_DIR/run.sh"
+  fi
   for i in $(seq 1 24); do
     sleep 5
-    curl -sf -m 3 "http://127.0.0.1:${COMFY_PORT:-8188}/system_stats" >/dev/null && break
-    [[ "$i" == 24 ]] && { log "FATAL: comfy never answered (see comfy.log)"; exit 1; }
+    curl -sf -m 3 "http://127.0.0.1:$COMFY_PORT/system_stats" >/dev/null && break
+    [[ "$i" == 24 ]] && { log "FATAL: comfy never answered on :$COMFY_PORT"; exit 1; }
   done
 fi
-log "comfy answering on :${COMFY_PORT:-8188}"
+log "comfy answering on :$COMFY_PORT"
 
 # ------------------------------------------------------------------ summary
 echo "================ BAKE COMPLETE ================"
 echo "gpu:      $GPU (${VRAM_MB}MB)"
-echo "comfy:    $(git -C "$COMFY_DIR" rev-parse --short HEAD) + $(ls "$NODES" | wc -l) node packs"
+echo "comfy:    $(git -C "$COMFY_DIR" rev-parse --short HEAD 2>/dev/null || echo "template-snapshot") + $(ls "$NODES" | wc -l) node packs"
 echo "torch:    $("$PY" -c 'import torch; print(torch.__version__)')"
 echo "tailnet:  $(tailscale ip -4 2>/dev/null | head -n1)"
 echo "disk:     $(df -h /workspace | awk 'NR==2{print $3"/"$2}')"
