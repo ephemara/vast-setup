@@ -1,0 +1,13 @@
+{
+  "id": "klein-9b-q6",
+  "label": "Klein 9B Q6 (image)",
+  "kind": "klein9",
+  "version": 1,
+  "description": "Flux Klein 9B Q6_K GGUF + Qwen3-8B Q4_K_M clip + Flux2 VAE + SNOFS v1.4 LoRA. ~14.3GB. No mmproj: text-only Qwen needs none (vision path uses the Qwen-VL pack when it lands).",
+  "files": [
+    { "dir": "diffusion_models", "file": "flux-2-klein-9b-Q6_K.gguf", "bytes": 7865424160, "url": "https://huggingface.co/unsloth/FLUX.2-klein-9B-GGUF/resolve/main/flux-2-klein-9b-Q6_K.gguf", "auth": "none" },
+    { "dir": "text_encoders", "file": "Qwen3-8B-heretic.Q4_K_M.gguf", "bytes": 5027784480, "url": "https://huggingface.co/mradermacher/Qwen3-8B-heretic-GGUF/resolve/main/Qwen3-8B-heretic.Q4_K_M.gguf", "auth": "none" },
+    { "dir": "vae", "file": "flux2-vae.safetensors", "bytes": 336213556, "url": "https://huggingface.co/unsloth/FLUX.2-VAE/resolve/main/split_files/vae/flux2-vae.safetensors", "auth": "none" },
+    { "dir": "loras", "file": "klein_snofs_v1_4.safetensors", "bytes": 1090563760, "url": "https://huggingface.co/Ashen3/SNOFS/resolve/main/Klein9b/klein_snofs_v1_4.safetensors", "auth": "none" }
+  ]
+}
