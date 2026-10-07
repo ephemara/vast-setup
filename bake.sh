@@ -18,9 +18,14 @@ have() { command -v "$1" >/dev/null 2>&1; }
 
 # ------------------------------------------------------------------ 0. GPU
 if ! have nvidia-smi; then log "FATAL: no nvidia-smi — not a GPU box"; exit 1; fi
-GPU="$(nvidia-smi --query-gpu=name --format=csv,noheader | head -n1)"
-VRAM_MB="$(nvidia-smi --query-gpu=memory.total --format=csv,noindex,nounits | head -n1)"
-SM="$(nvidia-smi --query-gpu=compute_cap --format=csv,noindex,nounits | head -n1 | tr -d .)"
+# NOTE: `noindex` is NOT universal (some builds reject it) — use noheader and
+# parse defensively. (A 580-driver box proved this the hard way: exit 2, zero
+# output, found via bash -x.)
+GPU="$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -n1 | sed 's/^[^A-Za-z]*//')"
+VRAM_MB="$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -n1 | grep -o '[0-9][0-9]*' | tail -n1)"
+SM_RAW="$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader 2>/dev/null | head -n1 | grep -o '[0-9]*\.[0-9]*' | head -n1)"
+SM="$(echo "$SM_RAW" | tr -d .)"
+[[ -n "$GPU" && -n "$VRAM_MB" && -n "$SM" ]] || { log "FATAL: could not parse nvidia-smi output (gpu='$GPU' vram='$VRAM_MB' sm='$SM_RAW')"; exit 1; }
 log "GPU=$GPU VRAM=${VRAM_MB}MB sm=$SM"
 [[ "$SM" -ge 75 ]] || { log "FATAL: sm < 75 unsupported"; exit 1; }
 if [[ "$SM" -lt 80 ]]; then log "note: pre-Ampere — sage-attention stays OFF (hard rule)"; fi
