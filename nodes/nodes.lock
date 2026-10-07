@@ -1,10 +1,16 @@
 # nodes.lock — custom nodes for the bake. Format: <dir> <repo-url> [rev] [requirements]
 # rev empty = default branch tip (only for repos without a local pin).
 # Pinned revs below match the working local box (S:/Local/.../custom_nodes).
-ComfyUI-GGUF https://github.com/city96/ComfyUI-GGUF.git
+# POLICY: every entry pins a rev. Unpinned (=tip) is how boxes drift into
+# incompatibility — proven 2026-10-07 when a box's ComfyUI core moved 0.37->0.39
+# while GGUF stayed put, and core started passing `input_act`, a kwarg the
+# node build doesn't accept (GGMLOps.Linear forward_ggml_cast_weights TypeError).
+# Until city96 supports it: core stays at/below COMFY_REV (a7169322), node at tip.
+ComfyUI-GGUF https://github.com/city96/ComfyUI-GGUF.git 6ea2651
 ComfyUI-VideoHelperSuite https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git 4d907be requirements.txt
 comfyui_essentials https://github.com/cubiq/comfyui_essentials.git 9d9f4be requirements.txt
 ComfyUI-Flowty-TripoSR https://github.com/flowtyone/ComfyUI-Flowty-TripoSR.git a0c94ac requirements.txt
+ComfyUI-WanVideoWrapper https://github.com/kijai/ComfyUI-WanVideoWrapper.git
 # DROPPED 2026-10-07: ComfyUI-Trellis2-GGUF (Aero-Ex fork) needs cumesh, which
 # wants its own CUDA build clashing with the image's torch. 3D is out of
 # scope for the image/video pipelines — re-add only with a matching wheel.

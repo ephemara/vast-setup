@@ -89,6 +89,17 @@ if [[ -f "$COMFY_DIR/main.py" ]]; then
       log "FORCE_COMFY_REV=1 — checking out $COMFY_REV"
       git -C "$COMFY_DIR" fetch -q origin
       git -C "$COMFY_DIR" checkout -q "$COMFY_REV"
+      CUR_REV="$(git -C "$COMFY_DIR" rev-parse --short HEAD)"
+    fi
+    # DRIFT GUARD (2026-10-07 incident): template images self-update core across
+    # reboots (ai-dock AUTO_UPDATE). A newer core than pinned breaks pinned
+    # nodes (GGUF vs core-0.39 `input_act`). Loud warn, never silent — operator
+    # then re-pins deliberately or forces the checkout. Warn-only (not fatal)
+    # so non-GGUF boxes never block on a core they don't care about.
+    if [[ "$CUR_REV" != "$COMFY_REV" ]] && grep -q "^ComfyUI-GGUF " "$HERE/nodes/nodes.lock"; then
+      log "WARN: template core $CUR_REV != pinned $COMFY_REV with GGUF locked — gens may fail (input_act class)."
+      log "WARN: fix with FORCE_COMFY_REV=1 (downgrade core to pinned) or re-pin both deliberately."
+      log "WARN: also set AUTO_UPDATE=false at instance creation so the image stops moving core."
     fi
   else
     log "comfy install has no .git (template snapshot) — staying on it"

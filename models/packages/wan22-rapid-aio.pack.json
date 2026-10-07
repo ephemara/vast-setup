@@ -1,0 +1,25 @@
+{
+  "description": "Phr00t WAN 2.2 14B Rapid AllInOne (NSFW v12.2, 4-step) + VACE start-to-end custom node. Checkpoint-native: DiT + UMT5 + VAE baked into one file, no split loaders. Needs ComfyUI-WanVideoWrapper from nodes.lock (Phr00t nodes_utility.py overwrites the wrapper's copy). ~23.3GB.",
+  "files": [
+    {
+      "auth": "none",
+      "bytes": 23284018448,
+      "dir": "checkpoints/WAN",
+      "file": "wan2.2-rapid-mega-aio-nsfw-v12.2.safetensors",
+      "url": "https://huggingface.co/Phr00t/WAN2.2-14B-Rapid-AllInOne/resolve/main/Mega-v12/wan2.2-rapid-mega-aio-nsfw-v12.2.safetensors"
+    },
+    {
+      "auth": "none",
+      "base": "comfy",
+      "bytes": 36300,
+      "dir": "custom_nodes/ComfyUI-WanVideoWrapper",
+      "file": "nodes_utility.py",
+      "note": "Phr00t overwrite of the wrapper's file (adds control_strength/control_ease). Re-sync after wrapper updates.",
+      "url": "https://huggingface.co/Phr00t/WAN2.2-14B-Rapid-AllInOne/resolve/main/Custom-Advanced-VACE-Node/nodes_utility.py"
+    }
+  ],
+  "id": "wan22-rapid-aio",
+  "kind": "wan",
+  "label": "Wan 2.2 Rapid AIO 14B (video)",
+  "version": 1
+}

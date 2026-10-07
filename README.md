@@ -38,6 +38,27 @@ present) and only VERIFIES it — no second install. Bare boxes still work
 the app's Part-2 sync later), verify `:8188/system_stats`, **snapshot the
 disk**, stop the box.
 
+## Pin policy (read after the 2026-10-07 `input_act` outage)
+
+Every rev in this repo is pinned: `COMFY_REV` in `bake.sh`, every line of
+`nodes/nodes.lock`. Unpinned (=tip) is how a box breaks while nobody watches —
+a template image self-updated ComfyUI core 0.37→0.39 across a reboot while the
+GGUF node stayed put, and core started passing `input_act`, a kwarg the node
+build rejects (`GGMLOps.Linear.forward_ggml_cast_weights` TypeError, every
+GGUF gen red). Pinned-and-working beats latest-and-surprising.
+
+Rules:
+
+- **Bump revs deliberately, never by drift.** New rev = commit with the
+  reason, proven by a gen on a box, not by a reboot surprise.
+- **GGUF boxes: `FORCE_COMFY_REV=1`.** Template core moves on its own;
+  forcing the checkout keeps core at the pinned rev the nodes were proven
+  against. Until city96 supports core-0.39's `input_act`, core stays put.
+- **Set `AUTO_UPDATE=false` at instance creation** (ai-dock template env).
+  Otherwise the image re-updates core on every boot and the bake's drift
+  guard will shout at you (triple-WARN when template core != pinned core
+  with GGUF locked — heed it, don't scroll past it).
+
 ## Secrets
 
 None live here. `.env.example` documents what's needed. If a key ever touches

@@ -24,6 +24,9 @@ hunt. The app (Part 2 sync) and `pack.sh` both speak this format.
   "files": [
     { "dir": "diffusion_models", "file": "model.gguf",
       "bytes": 2181382848, "url": "https://...", "auth": "none" }
+    // "base": "comfy" escapes models/ for ComfyUI-root files, e.g.
+    // { "base": "comfy", "dir": "custom_nodes/ComfyUI-WanVideoWrapper",
+    //   "file": "nodes_utility.py", ... } -> <COMFY_DIR>/custom_nodes/...
   ]
 }
 ```
