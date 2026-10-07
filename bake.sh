@@ -39,13 +39,20 @@ log "system deps ok"
 # stock debian sources don't carry it, so the naive `apt install tailscale`
 # silently fails and the bake dies later at `tailscale up`. Not anymore.
 if ! have tailscale; then
-  DISTRO_T="$(grep -oP '^ID=\K.*' /etc/os-release 2>/dev/null || echo ubuntu)"
-  CODENAME="$(grep -oP '^VERSION_CODENAME=\K.*' /etc/os-release 2>/dev/null || echo noble)"
-  curl -fsSL "https://pkgs.tailscale.com/stable/${DISTRO_T}/${CODENAME}.gpg" \
-    -o /usr/share/keyrings/tailscale-archive-keyring.gpg 2>/dev/null || true
-  curl -fsSL "https://pkgs.tailscale.com/stable/${DISTRO_T}/${CODENAME}.list" \
-    -o /etc/apt/sources.list.d/tailscale.list 2>/dev/null || true
-  apt-get update -qq 2>&1 | tail -n1 || true
+  # Prefer upstream install.sh (handles ubuntu/debian trees + signed-by
+  # keyring correctly). Manual fallback writes its own signed-by line — the
+  # plain `<codename>.list` from pkgs omits signed-by and apt rejects it
+  # with NO_PUBKEY even when the keyring file exists. Seen live on noble.
+  curl -fsSL https://tailscale.com/install.sh -o /tmp/ts-install.sh 2>/dev/null \
+    && sh /tmp/ts-install.sh 2>&1 | tail -n2 || {
+    DISTRO_T="$(grep -oP '^ID=\K.*' /etc/os-release 2>/dev/null || echo ubuntu)"
+    CODENAME="$(grep -oP '^VERSION_CODENAME=\K.*' /etc/os-release 2>/dev/null || echo noble)"
+    curl -fsSL "https://pkgs.tailscale.com/stable/${DISTRO_T}/${CODENAME}.noarmor.gpg" \
+      -o /usr/share/keyrings/tailscale-archive-keyring.gpg 2>/dev/null || true
+    echo "deb [signed-by=/usr/share/keyrings/tailscale-archive-keyring.gpg] https://pkgs.tailscale.com/stable/${DISTRO_T} ${CODENAME} main" \
+      > /etc/apt/sources.list.d/tailscale.list
+    apt-get update -qq 2>&1 | tail -n1 || true
+  }
   apt-get install -y -qq tailscale 2>&1 | tail -n1 || log "warn: tailscale install failed (section 6 will report)"
 fi
 have tailscale && log "tailscale bin ok" || log "warn: no tailscale binary — join will be skipped with a warning"
