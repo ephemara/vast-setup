@@ -3,3 +3,5 @@
 *.env text eol=lf
 .env.example text eol=lf
 *.pack.json text eol=lf
+*.lock text eol=lf
+*.md text eol=lf
