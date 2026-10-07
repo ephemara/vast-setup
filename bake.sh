@@ -39,10 +39,11 @@ log "system deps ok"
 # stock debian sources don't carry it, so the naive `apt install tailscale`
 # silently fails and the bake dies later at `tailscale up`. Not anymore.
 if ! have tailscale; then
-  CODENAME="$(grep -oP '^VERSION_CODENAME=\K.*' /etc/os-release 2>/dev/null || echo bookworm)"
-  curl -fsSL "https://pkgs.tailscale.com/stable/debian/${CODENAME}.gpg" \
+  DISTRO_T="$(grep -oP '^ID=\K.*' /etc/os-release 2>/dev/null || echo ubuntu)"
+  CODENAME="$(grep -oP '^VERSION_CODENAME=\K.*' /etc/os-release 2>/dev/null || echo noble)"
+  curl -fsSL "https://pkgs.tailscale.com/stable/${DISTRO_T}/${CODENAME}.gpg" \
     -o /usr/share/keyrings/tailscale-archive-keyring.gpg 2>/dev/null || true
-  curl -fsSL "https://pkgs.tailscale.com/stable/debian/${CODENAME}.list" \
+  curl -fsSL "https://pkgs.tailscale.com/stable/${DISTRO_T}/${CODENAME}.list" \
     -o /etc/apt/sources.list.d/tailscale.list 2>/dev/null || true
   apt-get update -qq 2>&1 | tail -n1 || true
   apt-get install -y -qq tailscale 2>&1 | tail -n1 || log "warn: tailscale install failed (section 6 will report)"
@@ -142,13 +143,16 @@ log "tailscale: $(tailscale ip -4 2>/dev/null | head -n1 || echo NOT-JOINED)"
 # Vast base-image derivatives run comfyui as a SUPERVISOR service (internal
 # :18188, flags in $COMFYUI_ARGS) — never nohup a second copy beside it.
 # Bare boxes get the run.sh fallback on :8188.
-# shellcheck disable=SC1091
-set -a; . "$HERE/comfy/flags.env"; set +a
+# NOTE: flags.env sets COMFY_PORT=8188, so the supervisor branch must FORCE
+# 18188 (not :-) — sourcing flags first poisons the default and the bake
+# probes the wrong port, bounces a healthy service, then FATALs. Seen live.
 if supervisorctl status comfyui >/dev/null 2>&1; then
-  COMFY_PORT="${COMFY_PORT:-18188}"
+  COMFY_PORT=18188
   log "supervisor manages comfyui — leaving the service alone (flags: \$COMFYUI_ARGS)"
   supervisorctl status comfyui || true
 else
+  # shellcheck disable=SC1091
+  set -a; . "$HERE/comfy/flags.env"; set +a
   COMFY_PORT="${COMFY_PORT:-8188}"
   # run.sh uses the same python bake resolved ($PY), not a hardcoded venv —
   # template boxes often have no .venv at all.
