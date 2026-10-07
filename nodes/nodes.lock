@@ -5,4 +5,7 @@ ComfyUI-GGUF https://github.com/city96/ComfyUI-GGUF.git
 ComfyUI-VideoHelperSuite https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git 4d907be requirements.txt
 comfyui_essentials https://github.com/cubiq/comfyui_essentials.git 9d9f4be requirements.txt
 ComfyUI-Flowty-TripoSR https://github.com/flowtyone/ComfyUI-Flowty-TripoSR.git a0c94ac requirements.txt
-ComfyUI-Trellis2-GGUF https://github.com/Aero-Ex/ComfyUI-Trellis2-GGUF.git b3b9e95 requirements.txt
+# DROPPED 2026-10-07: ComfyUI-Trellis2-GGUF (Aero-Ex fork) needs cumesh, which
+# wants its own CUDA build clashing with the image's torch. 3D is out of
+# scope for the image/video pipelines — re-add only with a matching wheel.
+# ComfyUI-Trellis2-GGUF https://github.com/Aero-Ex/ComfyUI-Trellis2-GGUF.git b3b9e95 requirements.txt
