@@ -33,9 +33,21 @@ if [[ "$SM" -lt 80 ]]; then log "note: pre-Ampere — sage-attention stays OFF (
 # ------------------------------------------------------------ 1. system deps
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq git curl python3 python3-venv ffmpeg tailscale 2>/dev/null \
-  || apt-get install -y -qq git curl python3 python3-venv ffmpeg
+apt-get install -y -qq git curl python3 python3-venv ffmpeg 2>&1 | tail -n1 || true
 log "system deps ok"
+# tailscale (best-effort here; section 6 joins). Needs its own apt repo —
+# stock debian sources don't carry it, so the naive `apt install tailscale`
+# silently fails and the bake dies later at `tailscale up`. Not anymore.
+if ! have tailscale; then
+  CODENAME="$(grep -oP '^VERSION_CODENAME=\K.*' /etc/os-release 2>/dev/null || echo bookworm)"
+  curl -fsSL "https://pkgs.tailscale.com/stable/debian/${CODENAME}.gpg" \
+    -o /usr/share/keyrings/tailscale-archive-keyring.gpg 2>/dev/null || true
+  curl -fsSL "https://pkgs.tailscale.com/stable/debian/${CODENAME}.list" \
+    -o /etc/apt/sources.list.d/tailscale.list 2>/dev/null || true
+  apt-get update -qq 2>&1 | tail -n1 || true
+  apt-get install -y -qq tailscale 2>&1 | tail -n1 || log "warn: tailscale install failed (section 6 will report)"
+fi
+have tailscale && log "tailscale bin ok" || log "warn: no tailscale binary — join will be skipped with a warning"
 
 # --------------------------------- 2. python + torch (template-aware)
 # Vast ComfyUI templates ship torch + cuda already. Never reinstall a working
@@ -112,11 +124,19 @@ done
 log "model dirs ready (core pull: ./models/fetch.sh or app Part-2 sync)"
 
 # -------------------------------------------------------------- 6. tailscale
-if ! tailscale status >/dev/null 2>&1; then
-  [[ -n "${TAILSCALE_AUTHKEY:-}" ]] || { log "FATAL: TAILSCALE_AUTHKEY not set"; exit 1; }
-  tailscale up --auth-key="$TAILSCALE_AUTHKEY" --hostname="${BOX_HOSTNAME:-mc-gpu-01}" --accept-dns=false
+# Best-effort join: tailnet-first is the design, but a box without tailscale
+# still proves nodes+comfy (SSH-proxy fallback). Never die here — warn loud.
+if ! have tailscale; then
+  log "warn: TAILSCALE SKIPPED — no binary (see section 1). Box reachable via Vast SSH proxy only."
+elif ! tailscale status >/dev/null 2>&1; then
+  [[ -n "${TAILSCALE_AUTHKEY:-}" ]] || log "warn: TAILSCALE_AUTHKEY not set — skipping join (set it + re-run bake to join)"
+  if [[ -n "${TAILSCALE_AUTHKEY:-}" ]]; then
+    pgrep -x tailscaled >/dev/null 2>&1 || { tailscaled >/var/log/tailscaled.log 2>&1 & sleep 3; }
+    tailscale up --auth-key="$TAILSCALE_AUTHKEY" --hostname="${BOX_HOSTNAME:-mc-gpu-01}" --accept-dns=false 2>&1 | tail -n3 \
+      || log "warn: tailscale up failed (container may lack /dev/net/tun — proxy fallback applies)"
+  fi
 fi
-log "tailscale: $(tailscale ip -4 2>/dev/null | head -n1)"
+log "tailscale: $(tailscale ip -4 2>/dev/null | head -n1 || echo NOT-JOINED)"
 
 # --------------------------------------- 7. ComfyUI up (supervisor-aware)
 # Vast base-image derivatives run comfyui as a SUPERVISOR service (internal
