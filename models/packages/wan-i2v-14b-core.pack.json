@@ -1,0 +1,14 @@
+{
+  "id": "wan-i2v-14b-core",
+  "label": "Wan 2.1 I2V 14B core (video)",
+  "kind": "wan",
+  "version": 1,
+  "description": "Wan 2.1 image-to-video 14B Q4 pipeline: DiT + UMT5 fp8 + VAE + clip-vision + LightX2V 4-step LoRA. ~20.4GB.",
+  "files": [
+    { "dir": "diffusion_models", "file": "wan2.1-i2v-14b-480p-Q4_K_M.gguf", "bytes": 11341184384, "url": "", "auth": "none" },
+    { "dir": "text_encoders", "file": "nsfw_wan_umt5-xxl_fp8_scaled.safetensors", "bytes": 6735887993, "url": "", "auth": "none" },
+    { "dir": "vae", "file": "wan_2.1_vae.safetensors", "bytes": 253815318, "url": "", "auth": "none" },
+    { "dir": "clip_vision", "file": "clip_vision_h.safetensors", "bytes": 1264219396, "url": "", "auth": "none" },
+    { "dir": "loras", "file": "wan2.1_i2v_lora_rank64_lightx2v_4step.safetensors", "bytes": 739472104, "url": "", "auth": "none" }
+  ]
+}

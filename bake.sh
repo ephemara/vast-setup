@@ -32,27 +32,53 @@ apt-get install -y -qq git curl python3 python3-venv ffmpeg tailscale 2>/dev/nul
   || apt-get install -y -qq git curl python3 python3-venv ffmpeg
 log "system deps ok"
 
-# ------------------------------------------------------- 2. python + torch
-if [[ ! -x "$COMFY_DIR/.venv/bin/python" ]]; then
+# --------------------------------- 2. python + torch (template-aware)
+# Vast ComfyUI templates ship torch + cuda already. Never reinstall a working
+# stack — detect first, only build the venv path on a truly bare box.
+PY=""
+for cand in "$COMFY_DIR/.venv/bin/python" "/venv/bin/python" "/opt/venv/bin/python"; do
+  [[ -x "$cand" ]] && PY="$cand" && break
+done
+if [[ -z "$PY" ]] && python3 -c "import torch" 2>/dev/null; then PY="$(command -v python3)"; fi
+if [[ -z "$PY" ]]; then
+  log "no working torch python found (bare box) — creating venv + torch ($TORCH_CUDA)…"
   mkdir -p "$COMFY_DIR"
   python3 -m venv "$COMFY_DIR/.venv"
-fi
-PY="$COMFY_DIR/.venv/bin/python"
-"$PY" -m pip install -q --upgrade pip
-if ! "$PY" -c "import torch" 2>/dev/null; then
-  log "installing torch ($TORCH_CUDA) — one time, ~2GB…"
+  PY="$COMFY_DIR/.venv/bin/python"
+  "$PY" -m pip install -q --upgrade pip
   "$PY" -m pip install -q torch torchvision torchaudio --index-url "https://download.pytorch.org/whl/$TORCH_CUDA"
+else
+  log "using python: $PY"
 fi
-log "torch $("$PY" -c 'import torch; print(torch.__version__)')"
+log "torch $("$PY" -c 'import torch; print(torch.__version__)' 2>/dev/null || echo MISSING)"
+"$PY" -c "import torch" 2>/dev/null || { log "FATAL: torch still missing after setup"; exit 1; }
 
-# -------------------------------------------------------------- 3. ComfyUI
-if [[ ! -f "$COMFY_DIR/main.py" ]]; then
+# ------------------------------------------------ 3. ComfyUI (template-aware)
+# Template path (main.py exists): verify, don't reinstall. Bare path: clone.
+if [[ -f "$COMFY_DIR/main.py" ]]; then
+  log "comfy already installed (template) — verifying, not reinstalling"
+  if [[ -d "$COMFY_DIR/.git" ]]; then
+    CUR_REV="$(git -C "$COMFY_DIR" rev-parse --short HEAD)"
+    log "comfy @ $CUR_REV (pinned $COMFY_REV)"
+    if [[ "${FORCE_COMFY_REV:-0}" == "1" && "$CUR_REV" != "$COMFY_REV" ]]; then
+      log "FORCE_COMFY_REV=1 — checking out $COMFY_REV"
+      git -C "$COMFY_DIR" fetch -q origin
+      git -C "$COMFY_DIR" checkout -q "$COMFY_REV"
+    fi
+  else
+    log "comfy install has no .git (template snapshot) — staying on it"
+  fi
+  # ensure deps (cheap no-op when already satisfied)
+  "$PY" -m pip install -q -r "$COMFY_DIR/requirements.txt" 2>/dev/null \
+    || log "warn: requirements ensure partial — continuing"
+else
+  log "no comfy found (bare box) — cloning @ $COMFY_REV"
   git clone -q https://github.com/Comfy-Org/ComfyUI "$COMFY_DIR"
+  git -C "$COMFY_DIR" fetch -q origin
+  git -C "$COMFY_DIR" checkout -q "$COMFY_REV"
+  "$PY" -m pip install -q -r "$COMFY_DIR/requirements.txt"
 fi
-git -C "$COMFY_DIR" fetch -q origin
-git -C "$COMFY_DIR" checkout -q "$COMFY_REV"
-"$PY" -m pip install -q -r "$COMFY_DIR/requirements.txt"
-log "comfyui @ $(git -C "$COMFY_DIR" rev-parse --short HEAD)"
+log "comfy ok: $COMFY_DIR/main.py"
 
 # ---------------------------------------------------------- 4. custom nodes
 NODES="$COMFY_DIR/custom_nodes"
@@ -90,13 +116,18 @@ log "tailscale: $(tailscale ip -4 2>/dev/null | head -n1)"
 # ------------------------------------------------------- 7. run script + up
 # shellcheck disable=SC1091
 set -a; . "$HERE/comfy/flags.env"; set +a
+# run.sh uses the same python bake resolved ($PY), not a hardcoded venv —
+# template boxes often have no .venv at all.
 cat > "$COMFY_DIR/run.sh" <<EOF
 #!/bin/bash
 cd "$COMFY_DIR" || exit 1
-source .venv/bin/activate
+PY_BIN="$PY"
+if [[ "\$PY_BIN" == *".venv"* && -f "\$(dirname "\$PY_BIN")/activate" ]]; then
+  source "\$(dirname "\$PY_BIN")/activate"
+fi
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export OMP_NUM_THREADS=8 MKL_NUM_THREADS=8
-nohup python main.py $COMFY_ARGS > comfy.log 2>&1 &
+nohup "\$PY_BIN" main.py $COMFY_ARGS > comfy.log 2>&1 &
 echo \$! > comfy.pid
 echo "comfy pid \$(cat comfy.pid), log $COMFY_DIR/comfy.log"
 EOF
@@ -119,5 +150,5 @@ echo "comfy:    $(git -C "$COMFY_DIR" rev-parse --short HEAD) + $(ls "$NODES" | 
 echo "torch:    $("$PY" -c 'import torch; print(torch.__version__)')"
 echo "tailnet:  $(tailscale ip -4 2>/dev/null | head -n1)"
 echo "disk:     $(df -h /workspace | awk 'NR==2{print $3"/"$2}')"
-echo "models:   core pull next -> cd $HERE && ./models/fetch.sh <file> --url <hf-link>"
+echo "models:   packs next -> ./models/pack.sh install klein-4b-core (then wan-i2v-14b-core)"
 echo "SNAPSHOT THIS DISK NOW. Then only start/stop, forever."

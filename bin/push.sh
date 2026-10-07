@@ -20,5 +20,5 @@ git archive HEAD | ssh -i "$KEY" -p "$PORT" -o StrictHostKeyChecking=no -o Batch
 
 echo "[push] running bake (env only, over the wire)"
 ssh -i "$KEY" -p "$PORT" -o StrictHostKeyChecking=no -o BatchMode=yes "root@${HOST#root@}" \
-  "TAILSCALE_AUTHKEY='$TAILSCALE_AUTHKEY' BOX_HOSTNAME='${BOX_HOSTNAME:-mc-gpu-01}' HF_TOKEN='${HF_TOKEN:-}' TORCH_CUDA='${TORCH_CUDA:-cu124}' bash /opt/vast-setup/bake.sh"
+  "TAILSCALE_AUTHKEY='$TAILSCALE_AUTHKEY' BOX_HOSTNAME='${BOX_HOSTNAME:-mc-gpu-01}' HF_TOKEN='${HF_TOKEN:-}' CIVITAI_TOKEN='${CIVITAI_TOKEN:-}' COMFY_DIR='${COMFY_DIR:-/workspace/ComfyUI}' FORCE_COMFY_REV='${FORCE_COMFY_REV:-0}' TORCH_CUDA='${TORCH_CUDA:-cu124}' bash /opt/vast-setup/bake.sh"
 echo "[push] done — verify with: ssh $HOST 'curl -s localhost:8188/system_stats'"

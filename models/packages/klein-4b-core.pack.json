@@ -1,0 +1,16 @@
+{
+  "id": "klein-4b-core",
+  "label": "Klein 4B core (image)",
+  "kind": "klein",
+  "version": 1,
+  "description": "Flux Klein 4B Q4 image pipeline: DiT + Qwen 8B clip + mmproj + VAE + 3 core LoRAs. ~9.3GB.",
+  "files": [
+    { "dir": "diffusion_models", "file": "flux-2-klein-4b-Q4_K_M.gguf", "bytes": 2181382848, "url": "", "auth": "none" },
+    { "dir": "text_encoders", "file": "qwen3-8b-heretic-Q4_K_M.gguf", "bytes": 5027783616, "url": "", "auth": "none" },
+    { "dir": "text_encoders", "file": "qwen8bmmproj-BF16.gguf", "bytes": 207346528, "url": "", "auth": "none" },
+    { "dir": "vae", "file": "flux2-vae.safetensors", "bytes": 336213556, "url": "", "auth": "none" },
+    { "dir": "loras", "file": "klein_snofs_v1_4.safetensors", "bytes": 1090563760, "url": "", "auth": "none" },
+    { "dir": "loras", "file": "flux2ultrarealisticlora.safetensors", "bytes": 165704488, "url": "", "auth": "none" },
+    { "dir": "loras", "file": "squish_18.safetensors", "bytes": 359257680, "url": "", "auth": "none" }
+  ]
+}
