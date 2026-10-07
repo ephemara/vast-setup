@@ -6,6 +6,7 @@
 #   ./models/pack.sh install <pack-id> [--dry-run]
 #   ./models/pack.sh verify <pack-id>
 #   ./models/pack.sh remove <pack-id> --yes
+#   ./models/pack.sh json [pack-id]   # machine-readable inventory (for the app)
 # Env: COMFY_DIR (default /workspace/ComfyUI), HF_TOKEN (auth:hf),
 #      CIVITAI_TOKEN (auth:civitai). Never guesses hosts: blank url = abort
 #      with the exact file named.
@@ -112,6 +113,34 @@ for f in json.load(open('$PKGS/$PACK.pack.json'))['files']:
     [[ -n "$PACK" ]] || { echo "usage: pack.sh verify <pack-id>"; exit 1; }
     have_pack
     exec bash "$0" info "$PACK" ;;
+  json)
+    # Machine inventory for the mobile-comfy app (attach flow + cloud picker).
+    # One JSON object, no URLs (links never leave the box over this channel).
+    if [[ -n "$PACK" ]]; then have_pack; GLOB="$PKGS/$PACK.pack.json"; else GLOB="$PKGS/*.pack.json"; fi
+    python3 - "$COMFY_DIR" $GLOB <<'PY'
+import json, os, sys, glob
+base = sys.argv[1]
+files = []
+for g in sys.argv[2:]:
+    for p in glob.glob(g):
+        try: files.append(p)
+        except Exception: pass
+out = []
+for p in sorted(set(files)):
+    try: pack = json.load(open(p))
+    except Exception: continue
+    fs = []
+    for f in pack.get('files', []):
+        dest = os.path.join(base, 'models', f['dir'], f['file'])
+        try: present = os.path.isfile(dest) and os.path.getsize(dest) == f['bytes']
+        except OSError: present = False
+        fs.append({'dir': f['dir'], 'file': f['file'], 'bytes': f['bytes'], 'present': present})
+    out.append({'id': pack.get('id'), 'label': pack.get('label', ''), 'kind': pack.get('kind', ''),
+                'description': pack.get('description', ''), 'files': fs,
+                'present': sum(1 for f in fs if f['present']), 'total': len(fs)})
+print(json.dumps({'ok': True, 'packs': out}))
+PY
+    ;;
   remove)
     [[ -n "$PACK" ]] || { echo "usage: pack.sh remove <pack-id> --yes"; exit 1; }
     have_pack
@@ -127,5 +156,5 @@ import json
 for f in json.load(open('$PKGS/$PACK.pack.json'))['files']:
     print(f['dir']+'|'+f['file']+'|'+str(f['bytes']))")
     echo "pack $PACK removed" ;;
-  *) echo "usage: pack.sh {list|info|install|verify|remove} [pack-id]"; exit 1 ;;
+  *) echo "usage: pack.sh {list|info|install|verify|remove|json} [pack-id]"; exit 1 ;;
 esac
