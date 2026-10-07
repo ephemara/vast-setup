@@ -1,0 +1,8 @@
+# nodes.lock — custom nodes for the bake. Format: <dir> <repo-url> [rev] [requirements]
+# rev empty = default branch tip (only for repos without a local pin).
+# Pinned revs below match the working local box (S:/Local/.../custom_nodes).
+ComfyUI-GGUF https://github.com/city96/ComfyUI-GGUF.git
+ComfyUI-VideoHelperSuite https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite.git 4d907be requirements.txt
+comfyui_essentials https://github.com/cubiq/comfyui_essentials.git 9d9f4be requirements.txt
+ComfyUI-Flowty-TripoSR https://github.com/flowtyone/ComfyUI-Flowty-TripoSR.git a0c94ac requirements.txt
+ComfyUI-Trellis2-GGUF https://github.com/Aero-Ex/ComfyUI-Trellis2-GGUF.git b3b9e95 requirements.txt

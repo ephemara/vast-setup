@@ -1,0 +1,14 @@
+# Secrets NEVER live in this repo. Keys come from the machine running bin/push.sh
+# (env vars or ~/.config files) and are sent over SSH, never committed.
+*.key
+*.token
+*.pem
+.env
+*_key.txt
+*accesstoken*.txt
+tailscale*.txt
+github*.txt
+# local scratch
+workspace/
+*.log
+__pycache__/

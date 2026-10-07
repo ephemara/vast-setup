@@ -1,0 +1,331 @@
+[
+ {
+  "dir": "diffusion_models",
+  "file": "flux-2-klein-4b-Q2_K.gguf",
+  "bytes": 1272344192,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "diffusion_models",
+  "file": "flux-2-klein-4b-Q4_K_M.gguf",
+  "bytes": 2181382848,
+  "url": "",
+  "tier": "core"
+ },
+ {
+  "dir": "diffusion_models",
+  "file": "flux-2-klein-4b-fp8.safetensors",
+  "bytes": 4070624520,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "diffusion_models",
+  "file": "flux-2-klein-4b.safetensors",
+  "bytes": 7751105712,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "diffusion_models",
+  "file": "flux-2-klein-9b-Q4_K_M.gguf",
+  "bytes": 5909829920,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "diffusion_models",
+  "file": "flux-2-klein-9b-clean-Q4_K.gguf",
+  "bytes": 5108554240,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "diffusion_models",
+  "file": "flux-2-klein-9b.safetensors",
+  "bytes": 18157185168,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "diffusion_models",
+  "file": "wan2.1-i2v-14b-480p-Q4_K_M.gguf",
+  "bytes": 11341184384,
+  "url": "",
+  "tier": "core"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "Qwen3.5-4B-heretic.i1-Q6_K.gguf",
+  "bytes": 3464056448,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "Qwen3VL-8B-Instruct-Q4_K_M.gguf",
+  "bytes": 5027784800,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "clip_l.safetensors",
+  "bytes": 246144152,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "gemma-3-12b-it-abliterated_lora_rank64_bf16.safetensors",
+  "bytes": 628203616,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "mmproj-Qwen3VL-8B-Instruct-Q8_0.gguf",
+  "bytes": 752289728,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "nsfw_wan_umt5-xxl_fp8_scaled.safetensors",
+  "bytes": 6735887993,
+  "url": "",
+  "tier": "core"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "qwen3-4b-heretic.safetensors",
+  "bytes": 8044982048,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "qwen3-8b-heretic-Q4_K_M.gguf",
+  "bytes": 5027783616,
+  "url": "",
+  "tier": "core"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "qwen3-juiced-32b.gguf",
+  "bytes": 4565420416,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "qwen4bmmproj-BF16.gguf",
+  "bytes": 675569344,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "qwen8bmmproj-BF16.gguf",
+  "bytes": 207346528,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "text_encoders",
+  "file": "t5-v1_1-xxl-encoder-Q4_K_M.gguf",
+  "bytes": 2896123072,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "vae",
+  "file": "ae.safetensors",
+  "bytes": 335304388,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "vae",
+  "file": "flux2-vae.safetensors",
+  "bytes": 336213556,
+  "url": "",
+  "tier": "core"
+ },
+ {
+  "dir": "vae",
+  "file": "wan_2.1_vae.safetensors",
+  "bytes": 253815318,
+  "url": "",
+  "tier": "core"
+ },
+ {
+  "dir": "clip_vision",
+  "file": "clip_vision_h.safetensors",
+  "bytes": 1264219396,
+  "url": "",
+  "tier": "core"
+ },
+ {
+  "dir": "loras",
+  "file": "DR34ML4Y_I2V_14B_HIGH_V2.safetensors",
+  "bytes": 306807976,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "DR34ML4Y_I2V_14B_LOW_V2.safetensors",
+  "bytes": 306807976,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "Detail-Slider-SDXL.safetensors",
+  "bytes": 106,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "Detailed-Hands.safetensors",
+  "bytes": 89745224,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "FK_mountedfellatio.safetensors",
+  "bytes": 165705600,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "FLUX2_KLEIN_UNLOCKED_V2.safetensors",
+  "bytes": 331378000,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "Flux2-Klein-9B-consistency-V2.safetensors",
+  "bytes": 331379608,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "Flux2-Klein-Image-RestoreV1.safetensors",
+  "bytes": 248542160,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "Lorafy-Detail-FLUX.safetensors",
+  "bytes": 171969500,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "NSFW-22-H-e8.safetensors",
+  "bytes": 613516752,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "Realism_Engine_Klein_V2.safetensors",
+  "bytes": 1090563784,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "SDXL-Detail-Enhancer.safetensors",
+  "bytes": 114428388,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "Tentacle v2_000002000.safetensors",
+  "bytes": 165704384,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "fk_nelsondp.safetensors",
+  "bytes": 165704432,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "flux2ultrarealisticlora.safetensors",
+  "bytes": 165704488,
+  "url": "",
+  "tier": "core"
+ },
+ {
+  "dir": "loras",
+  "file": "klein_slider_anatomy.safetensors",
+  "bytes": 20738144,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "klein_snofs_v1_4.safetensors",
+  "bytes": 1090563760,
+  "url": "",
+  "tier": "core"
+ },
+ {
+  "dir": "loras",
+  "file": "lenovo_flux_klein9b.safetensors",
+  "bytes": 168858352,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "party_time_v2.1_klein9b.safetensors",
+  "bytes": 662729880,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "squish_18.safetensors",
+  "bytes": 359257680,
+  "url": "",
+  "tier": "core"
+ },
+ {
+  "dir": "loras",
+  "file": "trained_model (2).tar",
+  "bytes": 359280640,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "ultra_real_v4.safetensors",
+  "bytes": 165705592,
+  "url": "",
+  "tier": "extended"
+ },
+ {
+  "dir": "loras",
+  "file": "wan2.1_i2v_lora_rank64_lightx2v_4step.safetensors",
+  "bytes": 739472104,
+  "url": "",
+  "tier": "core"
+ }
+]
