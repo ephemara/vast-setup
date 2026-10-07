@@ -1,2 +1,5 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Shell scripts + env must stay LF — CRLF breaks bash on the box.
+*.sh text eol=lf
+*.env text eol=lf
+.env.example text eol=lf
+*.pack.json text eol=lf
