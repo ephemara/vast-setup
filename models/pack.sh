@@ -140,10 +140,15 @@ for p in sorted(set(files)):
         dest = os.path.join(base, root, f['dir'], f['file'])
         try: present = os.path.isfile(dest) and os.path.getsize(dest) == f['bytes']
         except OSError: present = False
-        fs.append({'dir': f['dir'], 'file': f['file'], 'bytes': f['bytes'], 'present': present})
+        fs.append({'dir': f['dir'], 'file': f['file'], 'bytes': f['bytes'],
+                   'base': f.get('base', 'models'), 'present': present,
+                   'hasUrl': bool(f.get('url'))})
+    n_missing_url = sum(1 for f in fs if not f['present'] and not f['hasUrl'])
     out.append({'id': pack.get('id'), 'label': pack.get('label', ''), 'kind': pack.get('kind', ''),
                 'description': pack.get('description', ''), 'files': fs,
-                'present': sum(1 for f in fs if f['present']), 'total': len(fs)})
+                'present': sum(1 for f in fs if f['present']), 'total': len(fs),
+                'syncable': n_missing_url == 0,
+                'hasComfyFiles': any(f.get('base') == 'comfy' for f in pack.get('files', []))})
 print(json.dumps({'ok': True, 'packs': out}))
 PY
     ;;

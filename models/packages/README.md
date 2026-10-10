@@ -84,7 +84,10 @@ No, with two footnotes:
 1. Copy the smallest existing pack, change `id`/`label`/`kind`.
 2. List every file the pipeline needs (diffusion, encoder, vae, vision,
    loras). Sizes from `manifest.json` or `stat -c%s`.
-3. Fill `url` + `auth` per file. Leave blank what you don't have yet —
-   `install` will tell the user exactly what's missing.
+3. Fill `url` + `auth` per file. A core pack must be ONE-SHOT SYNCABLE:
+   every file has a URL (`pack.sh json` reports `syncable`; the app's Models
+   tab shows no-link packs as unsyncable and hides them from generate tabs).
+   Never pad core with unlinked files — extra LoRAs ride separate packs.
+   `install` refuses blank URLs and names the exact file missing a link.
 4. `pack.sh verify <id>` on the laptop, commit, push. Box pulls it with
    `pack.sh install <id>`.

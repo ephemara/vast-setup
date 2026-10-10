@@ -1,16 +1,1 @@
-{
-  "id": "klein-4b-core",
-  "label": "Klein 4B core (image)",
-  "kind": "klein",
-  "version": 1,
-  "description": "Flux Klein 4B Q4 image pipeline: DiT + Qwen 8B clip + mmproj + VAE + 3 core LoRAs. ~9.3GB.",
-  "files": [
-    { "dir": "diffusion_models", "file": "flux-2-klein-4b-Q4_K_M.gguf", "bytes": 2181382848, "url": "", "auth": "none" },
-    { "dir": "text_encoders", "file": "qwen3-8b-heretic-Q4_K_M.gguf", "bytes": 5027783616, "url": "", "auth": "none" },
-    { "dir": "text_encoders", "file": "qwen8bmmproj-BF16.gguf", "bytes": 207346528, "url": "", "auth": "none" },
-    { "dir": "vae", "file": "flux2-vae.safetensors", "bytes": 336213556, "url": "", "auth": "none" },
-    { "dir": "loras", "file": "klein_snofs_v1_4.safetensors", "bytes": 1090563760, "url": "", "auth": "none" },
-    { "dir": "loras", "file": "flux2ultrarealisticlora.safetensors", "bytes": 165704488, "url": "", "auth": "none" },
-    { "dir": "loras", "file": "squish_18.safetensors", "bytes": 359257680, "url": "", "auth": "none" }
-  ]
-}
+{"description": "Flux Klein 4B Q4_K_M image pipeline: DiT + Qwen3-8B clip + Flux2 VAE + SNOFS v1.4 LoRA. ~8.7GB. Mirrors klein-9b-q6 structure (4 files, all URL'd, one-shot syncable). Extra style LoRAs ride separate packs later — core never blocks on a missing link.", "files": [{"auth": "none", "bytes": 2604311104, "dir": "diffusion_models", "file": "flux-2-klein-4b-Q4_K_M.gguf", "url": "https://huggingface.co/unsloth/FLUX.2-klein-4B-GGUF/resolve/main/flux-2-klein-4b-Q4_K_M.gguf"}, {"auth": "none", "bytes": 5027784480, "dir": "text_encoders", "file": "Qwen3-8B-heretic.Q4_K_M.gguf", "url": "https://huggingface.co/mradermacher/Qwen3-8B-heretic-GGUF/resolve/main/Qwen3-8B-heretic.Q4_K_M.gguf"}, {"auth": "none", "bytes": 336213556, "dir": "vae", "file": "flux2-vae.safetensors", "url": "https://huggingface.co/unsloth/FLUX.2-VAE/resolve/main/split_files/vae/flux2-vae.safetensors"}, {"auth": "none", "bytes": 1090563760, "dir": "loras", "file": "klein_snofs_v1_4.safetensors", "url": "https://huggingface.co/Ashen3/SNOFS/resolve/main/Klein9b/klein_snofs_v1_4.safetensors"}], "id": "klein-4b-core", "kind": "klein", "label": "Klein 4B core (image)", "version": 2}
