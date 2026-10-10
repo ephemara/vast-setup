@@ -44,7 +44,9 @@ file_status() { # base dir file bytes -> present|missing|partial PATH
   else echo "missing $dest"; fi
 }
 
-dl_one() { # base dir file url auth bytes
+dl_one() { # base dir file url auth bytes — idempotent + resume-safe.
+  # present files are never re-downloaded; partials resume via curl -C -;
+  # overfull locals (manual copy / upstream shrink) are wiped for a fresh pull.
   local base="$1" dir="$2" file="$3" url="$4" auth="$5" bytes="$6"
   local dest="$(pack_dest "$base" "$dir" "$file")"
   read -r st _ < <(file_status "$base" "$dir" "$file" "$bytes")
@@ -58,9 +60,50 @@ dl_one() { # base dir file url auth bytes
     [[ -n "${!tok_var:-}" ]] || echo "warn: auth=$auth but \$$tok_var unset — trying anonymous"
   fi
   mkdir -p "$(dirname "$dest")"
-  echo "fetching $file -> $dir/ ($(numfmt --to=iec "$bytes"))"
-  curl -sL -C - --retry 5 --retry-delay 3 "${auth_args[@]}" -o "$dest" "$url"
-  [[ "$(stat -c%s "$dest")" == "$bytes" ]] && echo "ok: $file" || { echo "SIZE MISMATCH for $file"; return 1; }
+  local have=0
+  [[ -f "$dest" ]] && have="$(stat -c%s "$dest" 2>/dev/null || echo 0)"
+  if [[ "$have" -gt "$bytes" ]]; then
+    echo "OVERFULL $file (have $(numfmt --to=iec "$have"), want $(numfmt --to=iec "$bytes")) — stale manual copy or upstream shrank, wiping for a fresh pull"
+    rm -f "$dest"
+    have=0
+  fi
+  if [[ "$have" -gt 0 ]]; then
+    echo "resuming $file ($have/$bytes, $(numfmt --to=iec "$have") of $(numfmt --to=iec "$bytes")) -> $dir/"
+  else
+    echo "fetching $file -> $dir/ ($(numfmt --to=iec "$bytes"))"
+  fi
+  # Silent curl + our own PROGRESS heartbeat (one compact line per 2s): the proc
+  # tail stays small and parseable, and the app renders per-file % from it.
+  # --fail keeps HTTP errors out of model files.
+  curl -sS -fL -C - --retry 5 --retry-delay 3 "${auth_args[@]}" -o "$dest" "$url" &
+  local cpid=$!
+  while kill -0 $cpid 2>/dev/null; do
+    sleep 2
+    kill -0 $cpid 2>/dev/null || break
+    local now="$(stat -c%s "$dest" 2>/dev/null || echo 0)"
+    echo "PROGRESS $file $(( now * 100 / bytes ))% ($now/$bytes)"
+  done
+  if wait $cpid; then
+    local got="$(stat -c%s "$dest" 2>/dev/null || echo 0)"
+    if [[ "$got" == "$bytes" ]]; then echo "ok: $file"; return 0; fi
+    echo "SIZE MISMATCH for $file (have $got, want $bytes)"
+    if [[ "$got" -gt "$bytes" ]]; then
+      echo "hint: local is BIGGER than the manifest — upstream file likely changed. 'pack.sh verify $PACK' shows all files; delete + retry pulls fresh."
+    elif [[ "$got" -lt "$bytes" ]]; then
+      echo "hint: local is SMALLER — download stopped early (spot kill / network cut). Just retry: resume continues where it left off."
+    fi
+    return 1
+  else
+    local code=$?
+    echo "DOWNLOAD FAILED for $file (curl exit $code)"
+    if [[ "$code" == "33" ]]; then
+      echo "hint: server refused resume range — wiping partial and retry fresh on next run"
+      rm -f "$dest"
+    elif [[ "$code" == "22" ]]; then
+      echo "hint: HTTP error (404/403?) — URL may be dead, check the pack json"
+    fi
+    return 1
+  fi
 }
 
 case "$CMD" in
@@ -106,6 +149,14 @@ PY
       echo "would install $PACK — $(pack_label) ($(numfmt --to=iec "$(pack_bytes)"))"
       exec bash "$0" info "$PACK"
     fi
+    # Single-flight per pack: a second SYNC press (or a double-click) must not
+    # stack a duplicate multi-GB download. Second runner exits fast with a loud line.
+    lockdir="/tmp/mc-pack-$PACK.lock"
+    if ! mkdir "$lockdir" 2>/dev/null; then
+      echo "SYNC ALREADY RUNNING for $PACK (lock $lockdir) — wait for it or 'rm -rf $lockdir' if stale"
+      exit 2
+    fi
+    trap 'rm -rf "$lockdir"' EXIT
     fail=0
     while IFS='|' read -r base dir file bytes url auth; do
       dl_one "$base" "$dir" "$file" "$url" "$auth" "$bytes" || fail=1
@@ -138,10 +189,12 @@ for p in sorted(set(files)):
     for f in pack.get('files', []):
         root = '' if f.get('base') == 'comfy' else 'models'
         dest = os.path.join(base, root, f['dir'], f['file'])
-        try: present = os.path.isfile(dest) and os.path.getsize(dest) == f['bytes']
-        except OSError: present = False
+        try:
+            present = os.path.isfile(dest) and os.path.getsize(dest) == f['bytes']
+            partial = os.path.isfile(dest) and os.path.getsize(dest) != f['bytes']
+        except OSError: present = False; partial = False
         fs.append({'dir': f['dir'], 'file': f['file'], 'bytes': f['bytes'],
-                   'base': f.get('base', 'models'), 'present': present,
+                   'base': f.get('base', 'models'), 'present': present, 'partial': partial,
                    'hasUrl': bool(f.get('url'))})
     n_missing_url = sum(1 for f in fs if not f['present'] and not f['hasUrl'])
     out.append({'id': pack.get('id'), 'label': pack.get('label', ''), 'kind': pack.get('kind', ''),
